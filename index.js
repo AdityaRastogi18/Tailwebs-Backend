@@ -5,6 +5,7 @@ const connectDB = require("./config/connection");
 // const urlRouter = require("./routes/url");
 // const staticRouter = require("./routes/staticRouter");
 const userRouter = require("./routes/user");
+const studentRouter = require("./routes/student");
 // Connection
 connectDB();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 // app.use("/url", urlRouter);
 // app.use("/", staticRouter);
 app.use("/", userRouter);
+app.use("/student", studentRouter);
 
 app.listen(3002, () => {
   console.log("server has started");

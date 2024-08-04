@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 
 const handleCreateNewUser = async (req, res) => {
   const body = req.body;
+  //   todo - check if user email doesn't already exist - pass err: email already exist
   const user = new User(body);
   await user.save();
 
