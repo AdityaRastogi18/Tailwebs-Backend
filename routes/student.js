@@ -4,16 +4,24 @@ const {
   handleEditStudent,
   handleDeleteStudent,
   handleDeleteSubject,
+  handleGetStudents,
+  handleGetStudentById,
 } = require("../controllers/student");
+const isAuthenticated = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
 router
   .route("/")
-  .post(handleCreateNewStudent)
-  .patch(handleEditStudent)
-  .delete(handleDeleteStudent);
+  .get(isAuthenticated, handleGetStudents)
+  .post(isAuthenticated, handleCreateNewStudent);
 
-router.delete("/subject", handleDeleteSubject);
+router
+  .route("/:id")
+  .get(isAuthenticated, handleGetStudentById)
+  .patch(isAuthenticated, handleEditStudent)
+  .delete(isAuthenticated, handleDeleteStudent);
+
+router.delete("/subject", isAuthenticated, handleDeleteSubject);
 
 module.exports = router;

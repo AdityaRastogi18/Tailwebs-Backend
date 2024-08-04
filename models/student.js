@@ -14,7 +14,7 @@ const studentSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    subject: {
+    subjects: {
       type: [
         {
           name: { type: String, required: true },

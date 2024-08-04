@@ -6,6 +6,8 @@ const connectDB = require("./config/connection");
 // const staticRouter = require("./routes/staticRouter");
 const userRouter = require("./routes/user");
 const studentRouter = require("./routes/student");
+const configurePassport = require("./config/passport");
+const passport = require("passport");
 // Connection
 connectDB();
 
@@ -17,8 +19,9 @@ const app = express();
 app.use(express.urlencoded({ extends: false }));
 app.use(express.json());
 
-// app.use("/url", urlRouter);
-// app.use("/", staticRouter);
+app.use(passport.initialize());
+configurePassport(passport);
+
 app.use("/", userRouter);
 app.use("/student", studentRouter);
 

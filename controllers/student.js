@@ -1,36 +1,52 @@
 const { Student } = require("../models/student");
 const { mergeArrays } = require("../utils/helperFunctions");
 
+const handleGetStudents = async (req, res) => {
+  const students = await Student.find({});
+  res.status(200).json(students);
+};
+
+const handleGetStudentById = async (req, res) => {
+  const id = req.params.id;
+  if (!id) {
+    return res.status(400).json({ msg: "ID is required!" });
+  }
+  const student = await Student.findById(id);
+  res.status(200).json(student);
+};
+
 const handleCreateNewStudent = async (req, res) => {
-  const { firstName, lastName, rollNum, subject } = req.body;
+  const { firstName, lastName, rollNum, subjects } = req.body;
 
   if (!rollNum)
     return res.status(400).json({ msg: "Roll Number can't be empty! " });
   if (!firstName)
     return res.status(400).json({ msg: "First Name can't be empty! " });
-  if (!subject?.length > 0)
+  if (!subjects?.length > 0)
     return res.status(400).json({ msg: "Subjects can't be empty! " });
 
   let student = await Student.findOne({ rollNum });
 
   if (student) {
     // mergeArrays - a helper func to add remaining subjects in the new subject array
-    const newSubjectArr = mergeArrays(student.subject, subject);
+    const newSubjectArr = mergeArrays(student.subjects, subjects);
     await Student.findOneAndUpdate(
       { rollNum },
-      { subject: [...newSubjectArr] }
+      { subjects: [...newSubjectArr] }
     );
     return res.status(200).json({ msg: "Student marks updated successfully" });
   }
 
-  student = new Student({ firstName, lastName, rollNum, subject });
+  student = new Student({ firstName, lastName, rollNum, subjects });
   await student.save();
 
   res.status(201).json({ msg: "Student created successfully!" });
 };
 
 const handleEditStudent = async (req, res) => {
-  const { firstName, lastName, rollNum, subject, id } = req.body;
+  const id = req.params.id;
+
+  const { firstName, lastName, rollNum, subjects } = req.body;
 
   const student = await Student.findById(id);
 
@@ -45,9 +61,9 @@ const handleEditStudent = async (req, res) => {
     student.rollNum = rollNum;
   }
 
-  if (subject?.length > 0) {
+  if (subjects?.length > 0) {
     // mergeArrays - a helper func to add remaining subjects in the new subject array
-    student.subject = mergeArrays(student.subject, subject);
+    student.subjects = mergeArrays(student.subjects, subjects);
   }
 
   await Student.findByIdAndUpdate(id, student);
@@ -55,7 +71,7 @@ const handleEditStudent = async (req, res) => {
 };
 
 const handleDeleteStudent = async (req, res) => {
-  const { id } = req.body;
+  const id = req.params.id;
 
   if (!id)
     return res
@@ -67,20 +83,23 @@ const handleDeleteStudent = async (req, res) => {
 };
 
 const handleDeleteSubject = async (req, res) => {
-  const { id, subjectID } = req.body;
+  const id = req.params.id;
+  const { subjectID } = req.body;
 
   if (!id || !subjectID)
     return res.status(400).json({ msg: "Must provide id to delete!" });
 
   await Student.updateOne(
     { _id: id },
-    { $pull: { subject: { _id: subjectID } } }
+    { $pull: { subjects: { _id: subjectID } } }
   );
 
   return res.status(200).json({ msg: "Subject deleted successfully" });
 };
 
 module.exports = {
+  handleGetStudents,
+  handleGetStudentById,
   handleCreateNewStudent,
   handleEditStudent,
   handleDeleteStudent,
