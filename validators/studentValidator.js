@@ -6,13 +6,10 @@ const validateStudent = [
   check("rollNum")
     .isInt({ min: 0 })
     .withMessage("Roll number must be an integer"),
-  check("subjects")
-    .isArray({ min: 1 })
-    .withMessage("Invalid value for subjects, expected an array"),
-  body("subjects.*.name")
+  check("subjectName")
     .notEmpty()
     .withMessage("Subject name is required for each subject"),
-  body("subjects.*.marks")
+  check("marks")
     .isInt({ min: 0 })
     .withMessage("Subject marks must be an integer for each subject"),
 

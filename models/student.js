@@ -12,15 +12,13 @@ const studentSchema = new mongoose.Schema(
     rollNum: {
       type: Number,
       required: true,
-      unique: true,
     },
-    subjects: {
-      type: [
-        {
-          name: { type: String, required: true },
-          marks: { type: Number, required: true },
-        },
-      ],
+    subjectName: {
+      type: String,
+      required: true,
+    },
+    marks: {
+      type: Number,
       required: true,
     },
   },

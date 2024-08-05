@@ -2,10 +2,9 @@ const express = require("express");
 const {
   handleCreateNewStudent,
   handleEditStudent,
-  handleDeleteStudent,
-  handleDeleteSubject,
   handleGetStudents,
   handleGetStudentById,
+  handleDeleteEntry,
 } = require("../controllers/student");
 const isAuthenticated = require("../middlewares/authMiddleware");
 const { studentValidator } = require("../validators");
@@ -25,8 +24,6 @@ router
   .route("/:id")
   .get(isAuthenticated, handleGetStudentById)
   .patch(isAuthenticated, handleEditStudent)
-  .delete(isAuthenticated, handleDeleteStudent);
-
-router.delete("/subject", isAuthenticated, handleDeleteSubject);
+  .delete(isAuthenticated, handleDeleteEntry);
 
 module.exports = router;

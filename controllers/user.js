@@ -3,46 +3,66 @@ const jwt = require("jsonwebtoken");
 
 const handleCreateNewUser = async (req, res) => {
   const { firstName, email, password } = req.body;
-  // if (!email) return res.status(400).json({ msg: "Email is required!" });
-  const user = new User({ firstName, email, password });
-  await user.save();
 
-  const payload = { id: user.id, name: user.email };
+  try {
+    let user = await User.findOne({ email });
+    if (user) return res.status(400).json({ msg: "Email already exists" });
 
-  jwt.sign(
-    payload,
-    process.env.JWT_SECRET,
-    { expiresIn: "10h" },
-    (err, token) => {
-      if (err) throw err;
-      res.json({ success: true, email: user.email, token: token });
-    }
-  );
+    user = new User({ firstName, email, password });
+    await user.save();
+
+    const payload = { id: user.id, name: user.email };
+
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: "10h" },
+      (err, token) => {
+        if (err) throw err;
+        res.json({
+          success: true,
+          email: user.email,
+          token: token,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        });
+      }
+    );
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 const handleLoginUser = async (req, res) => {
   const { email, password } = req.body;
-  // if (!email) return res.status(400).json({ msg: "Email is required!" });
-  const user = await User.findOne({
-    email,
-  });
-  if (!user) return res.status(404).json({ msg: "User Not Found!" });
 
-  const isMatch = await user.matchPassword(password);
-  if (!isMatch) {
-    return res.status(400).json({ password: "Incorrect password" });
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ msg: "User Not Found!" });
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) return res.status(400).json({ msg: "Incorrect password" });
+
+    const payload = { id: user.id, email: user.email };
+
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: "10h" },
+      (err, token) => {
+        if (err) throw err;
+        res.json({
+          success: true,
+          email: user.email,
+          token: token,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        });
+      }
+    );
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-  const payload = { id: user.id, email: user.email };
-
-  jwt.sign(
-    payload,
-    process.env.JWT_SECRET,
-    { expiresIn: "10h" },
-    (err, token) => {
-      if (err) throw err;
-      res.json({ success: true, email: user.email, token: token });
-    }
-  );
 };
 
 module.exports = { handleCreateNewUser, handleLoginUser };

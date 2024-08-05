@@ -1,39 +1,80 @@
 const { Student } = require("../models/student");
-const { mergeArrays } = require("../utils/helperFunctions");
 
 const handleGetStudents = async (req, res) => {
-  const students = await Student.find({});
-  res.status(200).json(students);
+  const { page = 1, limit = 10, sort = "asc", search } = req.query;
+  const sortOrder = sort === "desc" ? -1 : 1;
+  const searchRegExp = search ? new RegExp(search, "i") : null;
+  const filter = {};
+
+  if (search) {
+    const searchAsNumber = Number(search);
+    if (!isNaN(searchAsNumber)) {
+      filter.rollNum = searchAsNumber;
+    } else if (searchRegExp) {
+      filter.$or = [
+        { firstName: searchRegExp },
+        { "subjects.name": searchRegExp },
+      ];
+    }
+  }
+
+  try {
+    const students = await Student.aggregate([
+      { $match: filter },
+      { $sort: { rollNum: sortOrder } },
+      { $skip: (page - 1) * limit },
+      { $limit: parseInt(limit) },
+      { $project: { numberOfSubjects: 0 } },
+    ]);
+
+    const totalStudents = await Student.countDocuments(filter);
+
+    res.status(200).json({
+      students,
+      totalPages: Math.ceil(totalStudents / limit),
+      currentPage: page,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 const handleGetStudentById = async (req, res) => {
   const id = req.params.id;
-  if (!id) {
-    return res.status(400).json({ msg: "ID is required!" });
+
+  if (!id) return res.status(400).json({ msg: "ID is required!" });
+
+  try {
+    const student = await Student.findById(id);
+    res.status(200).json(student);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-  const student = await Student.findById(id);
-  res.status(200).json(student);
 };
 
 const handleCreateNewStudent = async (req, res) => {
-  const { firstName, lastName, rollNum, subjects } = req.body;
+  const { firstName, lastName, rollNum, subjectName, marks } = req.body;
 
-  let student = await Student.findOne({ rollNum });
+  try {
+    let student = await Student.findOne({
+      rollNum,
+      subjectName: new RegExp(`^${subjectName}$`, "i"),
+    });
 
-  if (student) {
-    // mergeArrays - a helper func to add remaining subjects in the new subject array
-    const newSubjectArr = mergeArrays(student.subjects, subjects);
-    await Student.findOneAndUpdate(
-      { rollNum },
-      { subjects: [...newSubjectArr] }
-    );
-    return res.status(200).json({ msg: "Student marks updated successfully" });
+    if (student) {
+      await Student.findByIdAndUpdate(student._id, { marks });
+      return res
+        .status(200)
+        .json({ msg: "Student marks updated successfully" });
+    }
+
+    student = new Student({ firstName, lastName, rollNum, subjectName, marks });
+    await student.save();
+
+    res.status(201).json({ msg: "Student created successfully!" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-
-  student = new Student({ firstName, lastName, rollNum, subjects });
-  await student.save();
-
-  res.status(201).json({ msg: "Student created successfully!" });
 };
 
 const handleEditStudent = async (req, res) => {
@@ -41,52 +82,35 @@ const handleEditStudent = async (req, res) => {
 
   if (!id) return res.status(400).json({ msg: "Student ID is required" });
 
-  const { firstName, lastName, rollNum, subjects } = req.body;
+  const { firstName, lastName, rollNum, subjectName, marks } = req.body;
 
-  const student = await Student.findById(id);
+  try {
+    const student = await Student.findById(id);
 
-  if (firstName) student.firstName = firstName;
-  if (lastName) student.lastName = lastName;
+    if (firstName) student.firstName = firstName;
+    if (lastName) student.lastName = lastName;
+    if (rollNum) student.rollNum = rollNum;
+    if (subjectName) student.subjectName = subjectName;
+    if (marks) student.marks = marks;
 
-  if (rollNum) {
-    const existingStudent = await Student.findOne({ rollNum });
-    if (existingStudent && existingStudent._id.toString() !== id) {
-      return res.status(400).json({ msg: "Roll number already exists" });
-    }
-    student.rollNum = rollNum;
+    await student.save();
+    return res.status(200).json({ msg: "Student updated successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-
-  if (subjects?.length > 0) {
-    // mergeArrays - a helper func to add remaining subjects in the new subject array
-    student.subjects = mergeArrays(student.subjects, subjects);
-  }
-
-  await Student.findByIdAndUpdate(id, student);
-  return res.status(200).json({ msg: "Student updated successfully" });
 };
 
-const handleDeleteStudent = async (req, res) => {
+const handleDeleteEntry = async (req, res) => {
   const id = req.params.id;
 
   if (!id) return res.status(400).json({ msg: "Student ID is required" });
 
-  await Student.findByIdAndDelete(id);
-  return res.status(200).json({ msg: "Student deleted successfully" });
-};
-
-const handleDeleteSubject = async (req, res) => {
-  const id = req.params.id;
-  const { subjectID } = req.body;
-
-  if (!id || !subjectID)
-    return res.status(400).json({ msg: "Student & Subject ID is required" });
-
-  await Student.updateOne(
-    { _id: id },
-    { $pull: { subjects: { _id: subjectID } } }
-  );
-
-  return res.status(200).json({ msg: "Subject deleted successfully" });
+  try {
+    await Student.findByIdAndDelete(id);
+    return res.status(200).json({ msg: "Student deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 module.exports = {
@@ -94,6 +118,5 @@ module.exports = {
   handleGetStudentById,
   handleCreateNewStudent,
   handleEditStudent,
-  handleDeleteStudent,
-  handleDeleteSubject,
+  handleDeleteEntry,
 };
