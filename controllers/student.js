@@ -18,13 +18,6 @@ const handleGetStudentById = async (req, res) => {
 const handleCreateNewStudent = async (req, res) => {
   const { firstName, lastName, rollNum, subjects } = req.body;
 
-  if (!rollNum)
-    return res.status(400).json({ msg: "Roll Number can't be empty! " });
-  if (!firstName)
-    return res.status(400).json({ msg: "First Name can't be empty! " });
-  if (!subjects?.length > 0)
-    return res.status(400).json({ msg: "Subjects can't be empty! " });
-
   let student = await Student.findOne({ rollNum });
 
   if (student) {
@@ -45,6 +38,8 @@ const handleCreateNewStudent = async (req, res) => {
 
 const handleEditStudent = async (req, res) => {
   const id = req.params.id;
+
+  if (!id) return res.status(400).json({ msg: "Student ID is required" });
 
   const { firstName, lastName, rollNum, subjects } = req.body;
 
@@ -73,10 +68,7 @@ const handleEditStudent = async (req, res) => {
 const handleDeleteStudent = async (req, res) => {
   const id = req.params.id;
 
-  if (!id)
-    return res
-      .status(400)
-      .json({ msg: "Must provide the student id to delete!" });
+  if (!id) return res.status(400).json({ msg: "Student ID is required" });
 
   await Student.findByIdAndDelete(id);
   return res.status(200).json({ msg: "Student deleted successfully" });
@@ -87,7 +79,7 @@ const handleDeleteSubject = async (req, res) => {
   const { subjectID } = req.body;
 
   if (!id || !subjectID)
-    return res.status(400).json({ msg: "Must provide id to delete!" });
+    return res.status(400).json({ msg: "Student & Subject ID is required" });
 
   await Student.updateOne(
     { _id: id },

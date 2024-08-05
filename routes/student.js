@@ -8,13 +8,18 @@ const {
   handleGetStudentById,
 } = require("../controllers/student");
 const isAuthenticated = require("../middlewares/authMiddleware");
+const { studentValidator } = require("../validators");
 
 const router = express.Router();
 
 router
   .route("/")
   .get(isAuthenticated, handleGetStudents)
-  .post(isAuthenticated, handleCreateNewStudent);
+  .post(
+    isAuthenticated,
+    studentValidator.validateStudent,
+    handleCreateNewStudent
+  );
 
 router
   .route("/:id")

@@ -2,9 +2,9 @@ const { User } = require("../models/user");
 const jwt = require("jsonwebtoken");
 
 const handleCreateNewUser = async (req, res) => {
-  const body = req.body;
-  //   todo - check if user email doesn't already exist - pass err: email already exist
-  const user = new User(body);
+  const { firstName, email, password } = req.body;
+  // if (!email) return res.status(400).json({ msg: "Email is required!" });
+  const user = new User({ firstName, email, password });
   await user.save();
 
   const payload = { id: user.id, name: user.email };
@@ -22,7 +22,7 @@ const handleCreateNewUser = async (req, res) => {
 
 const handleLoginUser = async (req, res) => {
   const { email, password } = req.body;
-  if (!email) return res.status(400).json({ msg: "Email is required!" });
+  // if (!email) return res.status(400).json({ msg: "Email is required!" });
   const user = await User.findOne({
     email,
   });

@@ -1,21 +1,18 @@
 require("dotenv").config();
 const express = require("express");
-const path = require("path");
+const cors = require("cors");
 const connectDB = require("./config/connection");
-// const urlRouter = require("./routes/url");
-// const staticRouter = require("./routes/staticRouter");
 const userRouter = require("./routes/user");
 const studentRouter = require("./routes/student");
 const configurePassport = require("./config/passport");
 const passport = require("passport");
-// Connection
+
 connectDB();
 
 const app = express();
 
-// app.set("view engine", "ejs");
-// app.set("views", path.resolve("./views"));
-
+app.use(cors());
+app.options("*", cors());
 app.use(express.urlencoded({ extends: false }));
 app.use(express.json());
 
