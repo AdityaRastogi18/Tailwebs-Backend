@@ -25,3 +25,5 @@ app.use("/student", studentRouter);
 app.listen(3002, () => {
   console.log("server has started");
 });
+
+module.exports = { app };

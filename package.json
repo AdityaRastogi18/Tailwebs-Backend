@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Backend for Tailwebs Teacher Portal Assignment",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "nodemon index"
   },
@@ -19,6 +20,7 @@
     "nodemon": "^3.1.4",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "supertest": "^7.0.0"
   }
 }
