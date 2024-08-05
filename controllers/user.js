@@ -65,4 +65,23 @@ const handleLoginUser = async (req, res) => {
   }
 };
 
-module.exports = { handleCreateNewUser, handleLoginUser };
+const handleUserUpdate = async (req, res) => {
+  const id = req.user._id;
+  const { password } = req.body;
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    user.password = password;
+    await user.save();
+
+    res.status(200).json({ msg: "Password updated successfully!" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { handleCreateNewUser, handleLoginUser, handleUserUpdate };
