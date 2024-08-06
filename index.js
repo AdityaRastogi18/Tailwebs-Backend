@@ -9,6 +9,7 @@ const passport = require("passport");
 
 connectDB();
 
+const PORT = process.env.PORT;
 const app = express();
 
 app.use(cors());
@@ -22,8 +23,6 @@ configurePassport(passport);
 app.use("/", userRouter);
 app.use("/student", studentRouter);
 
-app.listen(3002, () => {
+app.listen(PORT || 3002, () => {
   console.log("server has started");
 });
-
-module.exports = { app };

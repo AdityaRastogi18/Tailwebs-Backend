@@ -11,10 +11,7 @@ const handleGetStudents = async (req, res) => {
     if (!isNaN(searchAsNumber)) {
       filter.rollNum = searchAsNumber;
     } else if (searchRegExp) {
-      filter.$or = [
-        { firstName: searchRegExp },
-        { "subjects.name": searchRegExp },
-      ];
+      filter.$or = [{ firstName: searchRegExp }, { subjectName: searchRegExp }];
     }
   }
 

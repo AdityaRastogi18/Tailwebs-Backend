@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Backend for Tailwebs Teacher Portal Assignment",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "start": "nodemon index"
   },
