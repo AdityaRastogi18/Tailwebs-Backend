@@ -3,6 +3,7 @@ const {
   handleCreateNewUser,
   handleLoginUser,
   handleUserUpdate,
+  forgotPassword,
 } = require("../controllers/user");
 const { authValidator } = require("../validators");
 const isAuthenticated = require("../middlewares/authMiddleware");
@@ -14,5 +15,6 @@ router
   .route("/signup")
   .post(authValidator.validateRegistration, handleCreateNewUser);
 router.post("/login", authValidator.validateLogin, handleLoginUser);
+router.post("/forgotPassword", forgotPassword);
 
 module.exports = router;

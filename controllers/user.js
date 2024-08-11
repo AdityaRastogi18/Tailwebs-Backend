@@ -1,5 +1,6 @@
 const { User } = require("../models/user");
 const jwt = require("jsonwebtoken");
+const { sendMail } = require("../utils/mailer");
 
 const handleCreateNewUser = async (req, res) => {
   const { firstName, email, password } = req.body;
@@ -19,7 +20,11 @@ const handleCreateNewUser = async (req, res) => {
       { expiresIn: "10h" },
       (err, token) => {
         if (err) throw err;
-        res.json({
+        res.cookie("token", token, {
+          // Remove security attributes for testing
+          path: "/",
+        });
+        res.status(201).json({
           success: true,
           email: user.email,
           token: token,
@@ -51,7 +56,8 @@ const handleLoginUser = async (req, res) => {
       { expiresIn: "10h" },
       (err, token) => {
         if (err) throw err;
-        res.json({
+        res.cookie("token", token);
+        res.status(200).json({
           success: true,
           email: user.email,
           token: token,
@@ -84,4 +90,42 @@ const handleUserUpdate = async (req, res) => {
   }
 };
 
-module.exports = { handleCreateNewUser, handleLoginUser, handleUserUpdate };
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      res.status(404).json({ msg: "User not found" });
+      return;
+    }
+
+    const secret = process.env.JWT_SECRET || "defaultSecret";
+
+    const token = jwt.sign({ id: user._id }, secret, {
+      expiresIn: "1h",
+    });
+
+    const resetLink = `${process.env.CLIENT_URL}/reset-password/${token}`;
+    await sendMail({
+      to: email,
+      subject: "Password Reset Request",
+      templateName: "forgotPassword",
+      context: {
+        firstName: user.firstName,
+        resetLink,
+      },
+    });
+
+    res.status(200).json({ msg: "Password reset link sent to your email." });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+module.exports = {
+  handleCreateNewUser,
+  handleLoginUser,
+  handleUserUpdate,
+  forgotPassword,
+};
