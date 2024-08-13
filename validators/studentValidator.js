@@ -10,7 +10,7 @@ const validateStudent = [
     .notEmpty()
     .withMessage("Subject name is required for each subject"),
   check("marks")
-    .isInt({ min: 0 })
+    .isInt({ min: 0, max: 100 })
     .withMessage("Subject marks must be an integer for each subject"),
 
   (req, res, next) => {

@@ -32,7 +32,7 @@ const handleGetStudents = async (req, res) => {
       currentPage: page,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ msg: err.message });
   }
 };
 
@@ -45,7 +45,7 @@ const handleGetStudentById = async (req, res) => {
     const student = await Student.findById(id);
     res.status(200).json(student);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ msg: err.message });
   }
 };
 
@@ -70,19 +70,22 @@ const handleCreateNewStudent = async (req, res) => {
 
     res.status(201).json({ msg: "Student created successfully!" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ msg: err.message });
   }
 };
 
 const handleEditStudent = async (req, res) => {
   const id = req.params.id;
-
   if (!id) return res.status(400).json({ msg: "Student ID is required" });
 
   const { firstName, lastName, rollNum, subjectName, marks } = req.body;
 
   try {
     const student = await Student.findById(id);
+
+    if (!student) {
+      return res.status(404).json({ msg: "Student not found!" });
+    }
 
     if (firstName) student.firstName = firstName;
     if (lastName) student.lastName = lastName;
@@ -93,7 +96,7 @@ const handleEditStudent = async (req, res) => {
     await student.save();
     return res.status(200).json({ msg: "Student updated successfully" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ msg: err.message });
   }
 };
 
@@ -106,7 +109,7 @@ const handleDeleteEntry = async (req, res) => {
     await Student.findByIdAndDelete(id);
     return res.status(200).json({ msg: "Student deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ msg: err.message });
   }
 };
 

@@ -21,7 +21,6 @@ const handleCreateNewUser = async (req, res) => {
       (err, token) => {
         if (err) throw err;
         res.cookie("token", token, {
-          // Remove security attributes for testing
           path: "/",
         });
         res.status(201).json({
@@ -34,7 +33,7 @@ const handleCreateNewUser = async (req, res) => {
       }
     );
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ msg: err.message });
   }
 };
 
@@ -56,7 +55,9 @@ const handleLoginUser = async (req, res) => {
       { expiresIn: "10h" },
       (err, token) => {
         if (err) throw err;
-        res.cookie("token", token);
+        res.cookie("token", token, {
+          path: "/",
+        });
         res.status(200).json({
           success: true,
           email: user.email,
@@ -67,7 +68,7 @@ const handleLoginUser = async (req, res) => {
       }
     );
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ msg: err.message });
   }
 };
 
@@ -86,7 +87,7 @@ const handleUserUpdate = async (req, res) => {
 
     res.status(200).json({ msg: "Password updated successfully!" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ msg: err.message });
   }
 };
 

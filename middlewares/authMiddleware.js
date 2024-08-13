@@ -10,6 +10,7 @@ const isAuthenticated = (req, res, next) => {
         message: "Unauthorized access denied",
       });
     }
+
     req.user = user;
     next();
   })(req, res, next);
